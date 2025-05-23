@@ -14,18 +14,24 @@
 
 ## Next Steps
 
-1. 📝 Implement `extract_dependencies.py` script that can:
+1. ✅ Implement `extract_dependencies.py` script that can:
    - Handle both early and late registry formats
    - Extract package dependency information at any given commit
    - Save dependency data in a structured JSON format
+   - Successfully tested on May 2025 commit (12,151 packages: 10,580 regular + 1,571 JLL)
 
-2. 📝 Create Julia code for building and analyzing the temporal adjacency structure:
+2. 📝 Validate dependency extraction and create network visualization:
+   - Test extraction on early registry format (2017-2018 commits)
+   - Create network graph visualization of package dependencies
+   - Verify data quality and completeness
+
+3. 📝 Create Julia code for building and analyzing the temporal adjacency structure:
    - Load dependency data from multiple time points
    - Build graph representations
    - Analyze how package relationships evolve over time
    - Visualize key metrics (centrality, clusters, etc.)
 
-3. 📝 Run analysis on significant time points:
+4. 📝 Run analysis on significant time points:
    - Start with monthly snapshots for a high-level view
    - Dive into specific periods of interest with daily snapshots
    - Focus on major Julia releases or ecosystem shifts
