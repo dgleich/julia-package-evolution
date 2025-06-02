@@ -25,14 +25,16 @@
    - Verified data quality and completeness
    - Created tools to analyze package dependencies over time
 
-3. 🔄 Create Julia code for building and analyzing the temporal adjacency structure:
+3. ✅ Create Julia code for building and analyzing the temporal adjacency structure:
    - ✅ Created initial Julia tools for analyzing dependencies
-   - 📝 Build graph representations
+   - ✅ Built global package index across all time periods
+   - ✅ Created script to generate sparse adjacency matrices for each month
    - 📝 Analyze how package relationships evolve over time
    - 📝 Visualize key metrics (centrality, clusters, etc.)
 
 4. 🔄 Run analysis on significant time points:
    - ✅ Generated monthly snapshots for a high-level view
+   - ✅ Created consistent sparse adjacency matrix representations
    - 📝 Dive into specific periods of interest with daily snapshots
    - 📝 Focus on major Julia releases or ecosystem shifts
    - ✅ Verified evolution of specific packages (GenericArpack, MatrixNetworks, GraphPlayground)
@@ -48,4 +50,5 @@
 - `commits_by_month.json`: First commit of each month (92 months from 2017-08 to 2025-05)
 - `commits_by_day.json`: First commit of each day (2636 days)
 - `dependencies_YYYY-MM.json`: Package dependency data for each month
-- `dependencies_6b69cc89.json`: Package dependency data for the May 2025 commit
+- `package_index.json`: Global index of all packages across time with temporal ordering
+- `matrices/adj_YYYY-MM.smat`: Sparse adjacency matrices for each month in SMAT format
