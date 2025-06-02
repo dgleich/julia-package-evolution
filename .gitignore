@@ -4,7 +4,12 @@ venv/
 env/
 
 # Generated data files
-*.json
+# Don't track dependency JSON files (they're large)
+dependencies_*.json
+
+# Allow tracking of index JSON files
+!commits_by_month.json
+!commits_by_day.json
 
 # General registry repository (large git repo)
 General/
