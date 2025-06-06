@@ -2,6 +2,13 @@
 
 This document outlines the major structural changes in the Julia Registry over time, which are important to consider when analyzing package dependencies across different time periods.
 
+## Repository Transition
+
+- **METADATA.jl**: The original Julia package registry (https://github.com/JuliaLang/METADATA.jl)
+- **General Registry**: The new Julia package registry (https://github.com/JuliaRegistries/General)
+
+The transition between these repositories began on February 25, 2018, with the commit `fdea9f164d45b616ce775e5506c0bbef70f3bb29` in the General registry. This commit marks the beginning of automatic synchronization from METADATA.jl to the General registry.
+
 ## Initial Structure (Aug 2017)
 
 The registry was created in August 2017 with commit `3c5981deae` which generated registry data from METADATA.jl. The initial structure had:
