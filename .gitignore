@@ -6,6 +6,10 @@ env/
 # Generated data files
 # Don't track dependency JSON files (they're large)
 dependencies_*.json
+package_index.json
+
+# Debug scripts and logs
+debug-scripts/
 
 # Allow tracking of index JSON files
 !commits_by_month.json
