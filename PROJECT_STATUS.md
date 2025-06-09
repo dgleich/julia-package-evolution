@@ -3,52 +3,74 @@
 ## What We've Accomplished
 
 1. ✅ Set up project repository and pushed to GitHub: https://github.com/dgleich/julia-package-evolution
-2. ✅ Created `index_commits_by_time.py` script to map commits to time periods (days/months)
-    - Successfully extracted monthly commit data (92 unique months)
-    - Successfully extracted daily commit data (2636 unique days)
-3. ✅ Identified major structural changes in the Julia Registry over time (documented in REGISTRY_CHANGES.md)
+2. ✅ Created scripts to map commits to time periods for both registries:
+    - `index_commits_by_time.py`: For General registry (92 unique months)
+    - `index_metadata_commits.py`: For METADATA.jl registry (extending coverage back to 2012)
+3. ✅ Identified major structural changes in Julia registries over time (documented in REGISTRY_CHANGES.md)
     - Early structure used lowercase filenames (package.toml, dependencies.toml, etc.)
     - Later structure uses capitalized filenames (Package.toml, Deps.toml, etc.)
+    - Different dependency formats between METADATA.jl and General registry
     - Hash format changed from `hash-sha1` to `git-tree-sha1`
-    - Dependencies and compatibility format evolved
+
+## Recent Progress
+
+1. ✅ Expanded data collection to include METADATA.jl registry:
+   - Created extraction scripts for both registries: `extract_dependencies.py` and `extract_metadata_dependencies.py`
+   - Successfully extracted dependencies all the way back to Julia's early days (2012)
+   - Integrated both registries into a unified timeline spanning 2012-2025
+
+2. ✅ Fixed critical bug in adjacency matrix generation:
+   - Identified incorrect processing of General registry dependencies
+   - General registry format has package names as keys and UUIDs as values (opposite of what was assumed)
+   - Fixed bug in `build_fixed_adjacency_matrices.jl` to correctly process both registry formats
+   - Successfully generated complete adjacency matrices for all 152 months (2012-08 to 2025-05)
+
+3. ✅ Created visualization of key package dependencies:
+   - Created `plot_visualization_deps.jl` to track dependencies on important packages over time
+   - Analyzed the growth of Plots.jl (508 dependent packages) vs Makie.jl (125 dependent packages)
+   - Generated clear visualization showing adoption trends
+
+4. ✅ Analyzed skipped dependencies:
+   - Created `analyze_skipped_deps.jl` to investigate missing dependencies
+   - Identified that most skipped dependencies (17,836 in May 2025) are Julia standard libraries
+   - Found one legitimate missing package (QuantitativeSusceptibilityMappingTGV) added after index creation
 
 ## Next Steps
 
-1. ✅ Implement `extract_dependencies.py` script that can:
-   - Handle both early and late registry formats
-   - Extract package dependency information at any given commit
-   - Save dependency data in a structured JSON format
-   - Successfully tested on May 2025 commit (12,151 packages: 10,580 regular + 1,571 JLL)
+1. 📝 Regenerate combined package index to include recently added packages:
+   - Update `combined_package_index.json` to include all packages through May 2025
+   - Regenerate adjacency matrices with the updated index
 
-2. ✅ Validate dependency extraction and create network visualization:
-   - Successfully tested extraction on early registry format (2017-2018 commits)
-   - Verified data quality and completeness
-   - Created tools to analyze package dependencies over time
+2. 📝 Analyze network properties of the dependency graphs over time:
+   - Compute centrality metrics to identify core packages
+   - Analyze clustering and community structure
+   - Track the evolution of dependency patterns
 
-3. ✅ Create Julia code for building and analyzing the temporal adjacency structure:
-   - ✅ Created initial Julia tools for analyzing dependencies
-   - ✅ Built global package index across all time periods
-   - ✅ Created script to generate sparse adjacency matrices for each month
-   - 📝 Analyze how package relationships evolve over time
-   - 📝 Visualize key metrics (centrality, clusters, etc.)
+3. 📝 Create comprehensive visualizations:
+   - Interactive visualizations of the package ecosystem
+   - Animated timeline showing growth over time
+   - Visualize the transition between METADATA.jl and General registry periods
 
-4. 🔄 Run analysis on significant time points:
-   - ✅ Generated monthly snapshots for a high-level view
-   - ✅ Created consistent sparse adjacency matrix representations
-   - 📝 Dive into specific periods of interest with daily snapshots
-   - 📝 Focus on major Julia releases or ecosystem shifts
-   - ✅ Verified evolution of specific packages (GenericArpack, MatrixNetworks, GraphPlayground)
+4. 📝 Perform focused analysis on specific domains:
+   - Machine learning/AI packages
+   - Data science ecosystem
+   - Web development stack
+   - Scientific computing foundations
 
-## Technical Considerations
+## Technical Insights
 
-- The registry format changed around 2019, so the dependency extraction code needs to handle both formats
-- Working with the full history requires careful Git operations (the repo is quite large)
-- For meaningful temporal analysis, proper dating of dependencies is crucial
+- Registry transition occurred on February 25, 2018 (commit `fdea9f164d45`)
+- METADATA.jl and General registry use different dependency formats:
+  - METADATA.jl: Synthetic UUIDs as keys, package names as values
+  - General: Package names as keys, real UUIDs as values
+- Standard libraries (e.g., LinearAlgebra, Random) are not tracked in package registries
+- Properly handling both formats is crucial for accurate temporal analysis
 
 ## Data Files Generated
 
-- `commits_by_month.json`: First commit of each month (92 months from 2017-08 to 2025-05)
-- `commits_by_day.json`: First commit of each day (2636 days)
-- `dependencies_YYYY-MM.json`: Package dependency data for each month
-- `package_index.json`: Global index of all packages across time with temporal ordering
-- `matrices/adj_YYYY-MM.smat`: Sparse adjacency matrices for each month in SMAT format
+- `commits_by_month.json`: First commit of each month from General registry
+- `metadata_commits_by_month.json`: First commit of each month from METADATA.jl
+- `dependencies_YYYY-MM.json`: Package dependency data for each month from General registry
+- `metadata_dependencies_YYYY-MM.json`: Package dependency data for each month from METADATA.jl
+- `combined_package_index.json`: Global index of all packages across both registries
+- `matrices_fixed/adj_YYYY-MM.smat`: Sparse adjacency matrices for each month in SMAT format

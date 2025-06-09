@@ -80,6 +80,62 @@ TreeViews = "0.3"
 
 Version constraints are now specified more precisely.
 
+## Dependency Format Differences Between Registries
+
+### METADATA.jl Format
+
+In the METADATA.jl registry, dependencies are structured with synthetic UUIDs as keys and package names as values:
+
+```json
+"dependencies": {
+  "PackageName": {
+    "uuid-key": "DependencyName",
+    ...
+  }
+}
+```
+
+For example, a package might depend on the "JSON" package, and this would be represented with a synthetic UUID as the key and "JSON" as the value.
+
+### General Registry Format
+
+In the General registry, dependencies are structured with package names as keys and real UUIDs as values:
+
+```json
+"dependencies": {
+  "PackageName": {
+    "Dates": "ade2ca70-3891-5945-98fb-dc099432e06a",
+    "JSON": "682c06a0-de6a-54ab-a142-c8b1cf79cde6",
+    ...
+  }
+}
+```
+
+In this format, package names (like "Dates" and "JSON") are the keys, and their real UUIDs are the values.
+
+## Fixed Bug in Dependency Processing
+
+A significant bug was fixed in the adjacency matrix generation code where the General registry dependencies were being processed incorrectly:
+
+```julia
+# INCORRECT General registry processing (original code)
+for (dep_uuid, dep_name) in deps
+    target_pkg = dep_name
+    # ...
+```
+
+The issue was that the code was assuming keys were UUIDs and values were package names, which is correct for METADATA.jl but incorrect for the General registry. The correct interpretation for General registry is:
+
+```julia
+# CORRECT General registry processing (fixed code)
+for (dep_name, dep_uuid) in deps
+    # Skip if dependency not in our index
+    if !haskey(package_to_index, dep_name)
+        # ...
+```
+
+This fix resulted in properly populated adjacency matrices for the General registry period, allowing for comprehensive temporal analysis across both registries.
+
 ## Implications for Dependency Analysis
 
 When analyzing the Julia package ecosystem's evolution:
@@ -88,5 +144,7 @@ When analyzing the Julia package ecosystem's evolution:
 2. Parse different version formats appropriately
 3. Handle the changing version range specification formats
 4. Consider that the hash format changed from `hash-sha1` to `git-tree-sha1`
+5. Process dependencies differently based on the registry source (METADATA.jl vs General)
+6. Handle standard library dependencies (like Base64, LinearAlgebra, etc.) which are not tracked in the package registry
 
-These structural changes will need to be handled in the code that extracts dependencies from different points in the registry's history.
+These structural changes are handled in the code that extracts and processes dependencies from different points in the registry's history.

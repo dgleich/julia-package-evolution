@@ -182,19 +182,17 @@ function build_adjacency_matrix(dependency_file, package_to_index)
         else
             # General registry format 
             # The deps is a Dict where:
-            # - keys are UUIDs of the dependencies
-            # - values are the names of the dependencies
-            for (dep_uuid, dep_name) in deps
-                target_pkg = dep_name
-                
+            # - keys are package names of dependencies
+            # - values are UUIDs of the dependencies
+            for (dep_name, dep_uuid) in deps
                 # Skip if dependency not in our index
-                if !haskey(package_to_index, target_pkg)
+                if !haskey(package_to_index, dep_name)
                     skipped_dep_count += 1
                     continue
                 end
                 
                 # Get column index for this dependency
-                j = package_to_index[target_pkg]
+                j = package_to_index[dep_name]
                 
                 # Add edge: package i depends on package j
                 A[i, j] = 1

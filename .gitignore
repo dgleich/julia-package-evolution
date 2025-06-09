@@ -6,17 +6,30 @@ env/
 # Generated data files
 # Don't track dependency JSON files (they're large)
 dependencies_*.json
-package_index.json
+metadata_dependencies_*.json
+package_index*.json
+combined_package_index.json
+*_extraction*.log
 
 # Debug scripts and logs
 debug-scripts/
 
+# Generated matrices and analysis results
+matrices/
+matrices_fixed/
+matrices_transition/
+*.log
+*.csv
+*.png
+
 # Allow tracking of index JSON files
 !commits_by_month.json
 !commits_by_day.json
+!metadata_commits_by_month.json
 
-# General registry repository (large git repo)
+# Registry repositories (large git repos)
 General/
+METADATA/
 
 # Python artifacts
 __pycache__/
