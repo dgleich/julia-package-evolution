@@ -38,7 +38,7 @@ This project aims to build and analyze the temporal evolution of the Julia packa
    python3 index_commits_by_time.py
    
    # For METADATA.jl registry
-   git clone https://github.com/JuliaPackaging/METADATA.jl.git METADATA
+   git clone https://github.com/JuliaLang/METADATA.jl METADATA
    python3 index_metadata_commits.py
    ```
    This will produce `commits_by_day.json`, `commits_by_month.json`, and `metadata_commits_by_month.json`.
