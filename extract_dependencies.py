@@ -103,16 +103,102 @@ class RegistryPackage(ABC):
             with open(deps_file, "rb") as f:
                 deps_data = tomllib.load(f)
             
-            # Flatten dependencies across all version ranges
-            all_deps = {}
-            for version_range, deps in deps_data.items():
-                if isinstance(deps, dict):
-                    all_deps.update(deps)
+            # Get the latest version to determine which dependencies apply
+            versions = self.extract_versions()
+            if not versions:
+                # If no versions available, fall back to flattening all dependencies
+                all_deps = {}
+                for version_range, deps in deps_data.items():
+                    if isinstance(deps, dict):
+                        all_deps.update(deps)
+                return all_deps
             
-            return all_deps
+            # Find the latest version using proper version comparison
+            def version_tuple(v):
+                return tuple(map(int, v.split('.')))
+            
+            latest_version = max(versions.keys(), key=version_tuple)
+            
+            # Start with base dependencies 
+            current_deps = {}
+            
+            # Check for major version base dependencies (e.g., "0", "1", "2")
+            major_version = latest_version.split('.')[0]
+            if major_version in deps_data and isinstance(deps_data[major_version], dict):
+                current_deps.update(deps_data[major_version])
+            
+            # Also check for "1" which sometimes means general dependencies
+            if "1" in deps_data and isinstance(deps_data["1"], dict):
+                current_deps.update(deps_data["1"])
+            
+            # Find which version-specific ranges apply to the latest version
+            for version_range, deps in deps_data.items():
+                # Skip base major version entries and non-dict entries
+                if version_range in [major_version, "1"] or not isinstance(deps, dict):
+                    continue
+                    
+                if self._version_in_range(latest_version, version_range):
+                    current_deps.update(deps)
+            
+            return current_deps
         except Exception as e:
             print(f"Error reading dependencies from {deps_file}: {e}")
             return {}
+    
+    def _version_in_range(self, version, version_range):
+        """Check if a version falls within a given version range."""
+        # Handle different range formats like "1.0.3-1", "1-1.0.2", "1.0.0", etc.
+        try:
+            # Simple version comparison without external dependencies
+            def version_tuple(v):
+                return tuple(map(int, v.split('.')))
+            
+            version_t = version_tuple(version)
+            
+            if "-" in version_range:
+                parts = version_range.split("-")
+                if len(parts) == 2:
+                    start, end = parts
+                    if end == "0":
+                        # Format like "0.22-0" means ">=0.22" (going to latest)
+                        start_t = version_tuple(start)
+                        return version_t >= start_t
+                    elif end == "1":
+                        # Format like "1.0.3-1" means ">=1.0.3"
+                        start_t = version_tuple(start)
+                        return version_t >= start_t
+                    else:
+                        # Format like "0-2" or "0.5-2" means ">=start,<=end.∞"
+                        # where end is the major version, so "0-2" includes all 2.x.x versions
+                        start_t = version_tuple(start)
+                        
+                        # If end is a single digit, it means all versions in that major series
+                        if len(end.split('.')) == 1:
+                            end_major = int(end)
+                            version_major = version_t[0]
+                            return start_t <= version_t and version_major <= end_major
+                        else:
+                            # Specific version bound like "0.2-2.2"
+                            end_t = version_tuple(end)
+                            return start_t <= version_t <= end_t
+                else:
+                    return False
+            else:
+                # Exact version match or major version base
+                if version_range == "1":
+                    # Special case: "1" means any version >= 1.0.0
+                    return version_t >= (1, 0, 0)
+                elif len(version_range.split('.')) == 1:
+                    # Major version base like "0", "1", "2"
+                    major = int(version_range)
+                    return version_t[0] == major
+                else:
+                    # Exact version match
+                    range_t = version_tuple(version_range)
+                    return version_t == range_t
+        except:
+            # Fallback: simple string matching for exact versions
+            return version == version_range or version_range == "1"
     
     def extract_versions(self):
         """Extract version information for this package."""
