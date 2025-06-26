@@ -15,6 +15,7 @@ from pathlib import Path
 import tomllib
 from collections import defaultdict
 from abc import ABC, abstractmethod
+from semantic_version import Version, SimpleSpec
 
 
 def get_repo_path():
@@ -103,6 +104,7 @@ class RegistryPackage(ABC):
             with open(deps_file, "rb") as f:
                 deps_data = tomllib.load(f)
             
+            
             # Get the latest version to determine which dependencies apply
             versions = self.extract_versions()
             if not versions:
@@ -113,11 +115,8 @@ class RegistryPackage(ABC):
                         all_deps.update(deps)
                 return all_deps
             
-            # Find the latest version using proper version comparison
-            def version_tuple(v):
-                return tuple(map(int, v.split('.')))
-            
-            latest_version = max(versions.keys(), key=version_tuple)
+            # Find the latest version using Version.coerce
+            latest_version = max(versions.keys(), key=lambda v: Version.coerce(v))
             
             # Start with base dependencies 
             current_deps = {}
@@ -136,7 +135,8 @@ class RegistryPackage(ABC):
                 # Skip base major version entries and non-dict entries
                 if version_range in [major_version, "1"] or not isinstance(deps, dict):
                     continue
-                    
+                
+                
                 if self._version_in_range(latest_version, version_range):
                     current_deps.update(deps)
             
@@ -146,59 +146,25 @@ class RegistryPackage(ABC):
             return {}
     
     def _version_in_range(self, version, version_range):
-        """Check if a version falls within a given version range."""
-        # Handle different range formats like "1.0.3-1", "1-1.0.2", "1.0.0", etc.
+        """Check if a version falls within a given version range using semantic versioning."""
         try:
-            # Simple version comparison without external dependencies
-            def version_tuple(v):
-                return tuple(map(int, v.split('.')))
+            current_version = Version.coerce(version)
             
-            version_t = version_tuple(version)
-            
+            # Handle range notation like "0.1-0.6", "0-2", "0.5-2"
             if "-" in version_range:
-                parts = version_range.split("-")
-                if len(parts) == 2:
-                    start, end = parts
-                    if end == "0":
-                        # Format like "0.22-0" means ">=0.22" (going to latest)
-                        start_t = version_tuple(start)
-                        return version_t >= start_t
-                    elif end == "1":
-                        # Format like "1.0.3-1" means ">=1.0.3"
-                        start_t = version_tuple(start)
-                        return version_t >= start_t
-                    else:
-                        # Format like "0-2" or "0.5-2" means ">=start,<=end.∞"
-                        # where end is the major version, so "0-2" includes all 2.x.x versions
-                        start_t = version_tuple(start)
-                        
-                        # If end is a single digit, it means all versions in that major series
-                        if len(end.split('.')) == 1:
-                            end_major = int(end)
-                            version_major = version_t[0]
-                            return start_t <= version_t and version_major <= end_major
-                        else:
-                            # Specific version bound like "0.2-2.2"
-                            end_t = version_tuple(end)
-                            return start_t <= version_t <= end_t
-                else:
-                    return False
+                start, end = version_range.split("-", 1)
+                # Julia ranges are inclusive: "a-b" means ">=a,<=b"
+                spec = SimpleSpec(f">={start},<={end}")
+                return current_version in spec
+            
+            # Single version - exact match using SimpleSpec
             else:
-                # Exact version match or major version base
-                if version_range == "1":
-                    # Special case: "1" means any version >= 1.0.0
-                    return version_t >= (1, 0, 0)
-                elif len(version_range.split('.')) == 1:
-                    # Major version base like "0", "1", "2"
-                    major = int(version_range)
-                    return version_t[0] == major
-                else:
-                    # Exact version match
-                    range_t = version_tuple(version_range)
-                    return version_t == range_t
-        except:
-            # Fallback: simple string matching for exact versions
-            return version == version_range or version_range == "1"
+                spec = SimpleSpec(f"={version_range}")
+                return current_version in spec
+                
+        except Exception:
+            # Fallback to string comparison for malformed versions
+            return version == version_range
     
     def extract_versions(self):
         """Extract version information for this package."""

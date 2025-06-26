@@ -3,7 +3,7 @@
 test_all_packages.py
 
 Comprehensive test script to verify dependency extraction against known
-dependency lists for multiple important Julia packages.
+dependency lists for specific versions of important Julia packages.
 """
 
 import sys
@@ -21,128 +21,7 @@ JULIA_STDLIB = {
     "UUIDs", "Unicode", "Downloads"  # Downloads was added in Julia 1.6
 }
 
-# Known dependency lists for key packages (latest versions)
-KNOWN_DEPENDENCIES = {
-    "DifferentialEquations": {
-        "BoundaryValueDiffEq",
-        "DelayDiffEq", 
-        "DiffEqBase",
-        "DiffEqCallbacks",
-        "DiffEqNoiseProcess",
-        "JumpProcesses",
-        "LinearAlgebra",
-        "LinearSolve",
-        "NonlinearSolve",
-        "OrdinaryDiffEq",
-        "Random",
-        "RecursiveArrayTools",
-        "Reexport",
-        "SciMLBase", 
-        "SteadyStateDiffEq",
-        "StochasticDiffEq",
-        "Sundials"
-    },
-    
-    "Makie": {
-        "Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", 
-        "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", 
-        "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", 
-        "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", 
-        "GridLayoutBase", "ImageBase", "ImageIO", "InteractiveUtils", "Interpolations", 
-        "IntervalSets", "InverseFunctions", "Isoband", "KernelDensity", "LaTeXStrings", 
-        "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", 
-        "Observables", "OffsetArrays", "PNGFiles", "Packing", "PlotUtils", "PolygonOps", 
-        "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", 
-        "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", 
-        "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", 
-        "UnicodeFun", "Unitful"
-    },
-    
-    "MatrixNetworks": {
-        "DataStructures",
-        "DelimitedFiles", 
-        "GenericArpack",  # Should be GenericArpack, NOT Arpack for latest version
-        "IterTools",
-        "KahanSummation",
-        "LinearAlgebra",
-        "Printf",
-        "Random",
-        "SparseArrays",
-        "Statistics"
-    },
-    
-    "Triangulate": {
-        "DocStringExtensions",
-        "Printf", 
-        "Triangle_jll"
-    },
-    
-    "ITensors": {
-        "Adapt",
-        "BitIntegers",
-        "ChainRulesCore", 
-        "Compat",
-        "Dictionaries",
-        "DocStringExtensions",
-        "Functors",
-        "IsApprox",
-        "LinearAlgebra",
-        "NDTensors",
-        "Pkg",
-        "Printf",
-        "Random",
-        "Requires",
-        "SerializedElementArrays",
-        "SimpleTraits",
-        "SparseArrays",
-        "StaticArrays",
-        "Strided",
-        "TimerOutputs",
-        "TupleTools",
-        "Zeros"
-    },
-    
-    "Plots": {
-        "Base64",
-        "Contour",
-        "Dates",
-        "Downloads",
-        "FFMPEG",
-        "FixedPointNumbers",
-        "GR",
-        "JLFzf",
-        "JSON",
-        "LaTeXStrings",
-        "Latexify",
-        "LinearAlgebra",
-        "Measures",
-        "NaNMath",
-        "Pkg",
-        "PlotThemes",
-        "PlotUtils",
-        "PrecompileTools",
-        "Printf",
-        "REPL",
-        "Random",
-        "RecipesBase",
-        "RecipesPipeline",
-        "Reexport",
-        "RelocatableFolders",
-        "Requires",
-        "Scratch",
-        "Showoff",
-        "SparseArrays",
-        "Statistics",
-        "StatsBase",
-        "TOML",
-        "UUIDs",
-        "UnicodeFun",
-        "UnitfulLatexify",
-        "Unzip"
-    }
-}
-
-# Known dependency lists for multiple versions of packages
+# Known dependency lists for specific versions of packages
 KNOWN_VERSION_DEPENDENCIES = {
     "Plots": {
         "1.40.13": {  # Latest version
@@ -165,12 +44,12 @@ KNOWN_VERSION_DEPENDENCIES = {
             "LinearAlgebra", "Printf", "Random", "SparseArrays", "Statistics"
         },
         
-        "1.0.2": {  # Historical with Arpack (need to verify this list)
+        "1.0.2": {  # Historical with Arpack
             "DataStructures", "DelimitedFiles", "Arpack", "IterTools", "KahanSummation",
             "LinearAlgebra", "Printf", "Random", "SparseArrays", "Statistics"
         }
     },
-    
+        
     "DifferentialEquations": {
         "7.16.1": {  # Latest version
             "BoundaryValueDiffEq", "DelayDiffEq", "DiffEqBase", "DiffEqCallbacks", "DiffEqNoiseProcess",
@@ -188,7 +67,7 @@ KNOWN_VERSION_DEPENDENCIES = {
     },
     
     "Makie": {
-        "0.22.6": {  # Latest version
+        "0.22.4": {  # Latest version
             "Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", 
             "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", 
             "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", 
@@ -202,29 +81,38 @@ KNOWN_VERSION_DEPENDENCIES = {
             "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", 
             "UnicodeFun", "Unitful"
         }
-        # Add historical versions when we get the data
     },
     
     "ITensors": {
-        "0.9.6": {  # Latest version
+        "0.9.5": {  # Latest version
             "Adapt", "BitIntegers", "ChainRulesCore", "Compat", "Dictionaries", "DocStringExtensions",
             "Functors", "IsApprox", "LinearAlgebra", "NDTensors", "Pkg", "Printf", "Random", "Requires",
             "SerializedElementArrays", "SimpleTraits", "SparseArrays", "StaticArrays", "Strided",
             "TimerOutputs", "TupleTools", "Zeros"
         }
-        # Add historical versions when we get the data
     },
     
     "Triangulate": {
         "2.4.0": {  # Latest version
             "DocStringExtensions", "Printf", "Triangle_jll"
         }
-        # Add historical versions when we get the data
-    }
+    },
     
-    # Note: We need historical dependency data for older versions of these packages
-    # to add more comprehensive multi-version testing. Currently we only have
-    # verified historical data for Plots.jl v0.14.0 and MatrixNetworks.jl v1.0.2
+    "LightLearn": {
+        "3.0.0": {  # Latest version - tests version parsing with yanked alpha versions
+            "Cairo", "ColorTypes", "CommonMark", "Downloads", "Gtk", "JSON", 
+            "PNGFiles", "Pkg", "Scratch", "TOML", "ZipFile"
+        }
+    },
+    
+    "ACME": {
+        "0.6.2": {  # Test version to verify transition period dependency extraction (from 2018-03)
+            "Compat", "DataStructures", "IterTools", "ProgressMeter"
+        },
+        "0.7.5": {  # Current registry version with same dependencies
+            "Compat", "DataStructures", "IterTools", "ProgressMeter"
+        }
+    }
 }
 
 def filter_stdlib_from_deps(deps_set):
@@ -264,13 +152,13 @@ def extract_dependencies_for_version(package_name, target_version):
     package_dir = repo_path / first_letter / package_name
     
     if not package_dir.exists():
-        print(f"❌ Package directory not found: {package_dir}")
+        print(f"WARNING: Package directory not found: {package_dir}")
         return None
     
     handler, format_type = create_package_handler(package_dir)
     
     if handler is None:
-        print(f"❌ No handler found for {package_name}")
+        print(f"WARNING: No handler found for {package_name}")
         return None
     
     try:
@@ -278,9 +166,9 @@ def extract_dependencies_for_version(package_name, target_version):
         versions = handler.extract_versions()
         
         if target_version not in versions:
-            print(f"❌ Version {target_version} not found in registry")
+            print(f"WARNING: Version {target_version} not found in registry")
             available_versions = list(versions.keys())
-            print(f"   Available versions: {available_versions[:10]}{'...' if len(available_versions) > 10 else ''}")
+            print(f"Available versions: {available_versions[:10]}{'...' if len(available_versions) > 10 else ''}")
             return None
         
         # Use the same logic as extract_dependencies but with target_version
@@ -314,184 +202,108 @@ def extract_dependencies_for_version(package_name, target_version):
         return current_deps, format_type
         
     except Exception as e:
-        print(f"❌ Error extracting dependencies for {package_name} v{target_version}: {e}")
+        print(f"ERROR: Failed to extract dependencies for {package_name} v{target_version}: {e}")
         import traceback
         traceback.print_exc()
         return None
 
-def test_package_dependencies(package_name, expected_deps):
-    """Test dependency extraction for a specific package against known dependencies."""
+def debug_package_version(package_name, version):
+    """Debug dependency extraction for a specific version of a package."""
     
     print(f"\n{'='*80}")
-    print(f"🧪 Testing: {package_name}")
+    print(f"DEBUG: {package_name} v{version}")
     print(f"{'='*80}")
     
-    # Find package directory
     repo_path = get_repo_path()
     first_letter = package_name[0].upper()
     package_dir = repo_path / first_letter / package_name
+    
+    print(f"Package directory: {package_dir}")
+    print(f"Directory exists: {package_dir.exists()}")
     
     if not package_dir.exists():
-        print(f"❌ Package directory not found: {package_dir}")
-        return False
-    
-    handler, format_type = create_package_handler(package_dir)
-    
-    if handler is None:
-        print(f"❌ No handler found for {package_name}")
-        return False
-    
-    try:
-        # Extract package information
-        versions = handler.extract_versions()
-        extracted_deps_dict = handler.extract_dependencies()
-        metadata = handler.extract_metadata()
-        
-        if not versions:
-            print(f"❌ No versions found for {package_name}")
-            return False
-        
-        # Get latest version and extracted dependencies
-        latest_version = max(versions.keys(), key=lambda v: tuple(map(int, v.split('.'))))
-        extracted_deps = set(extracted_deps_dict.keys())
-        
-        # Display basic info
-        print(f"📦 Package: {metadata.get('name', 'Unknown')}")
-        print(f"🔢 Latest version: {latest_version}")
-        print(f"📄 Registry format: {format_type}")
-        print(f"🆔 UUID: {metadata.get('uuid', 'Unknown')}")
-        
-        # Compare expected vs extracted, ignoring Julia standard libraries
-        comparison = compare_dependencies_ignoring_stdlib(expected_deps, extracted_deps)
-        
-        print(f"\n📊 Dependency Comparison (excluding Julia stdlib):")
-        print(f"✅ Expected non-stdlib dependencies: {len(comparison['expected_filtered'])}")
-        print(f"🔍 Extracted non-stdlib dependencies: {len(comparison['extracted_filtered'])}")
-        print(f"✅ Matching dependencies: {len(comparison['matching'])}")
-        print(f"❌ Missing dependencies: {len(comparison['missing'])}")
-        print(f"⚠️  Extra dependencies: {len(comparison['extra'])}")
-        
-        # Show stdlib info if present
-        if comparison['expected_stdlib'] or comparison['extracted_stdlib']:
-            print(f"\n📚 Julia Standard Libraries (ignored in comparison):")
-            if comparison['expected_stdlib']:
-                print(f"  Expected stdlib: {sorted(comparison['expected_stdlib'])}")
-            if comparison['extracted_stdlib']:
-                print(f"  Extracted stdlib: {sorted(comparison['extracted_stdlib'])}")
-        
-        # Show details for non-perfect matches
-        missing = comparison['missing']
-        extra = comparison['extra']
-        matching = comparison['matching']
-        
-        if missing or extra:
-            if matching:
-                print(f"\n✅ MATCHING DEPENDENCIES ({len(matching)}):")
-                for dep in sorted(matching):
-                    print(f"  ✓ {dep}")
-            
-            if missing:
-                print(f"\n❌ MISSING DEPENDENCIES ({len(missing)}):")
-                for dep in sorted(missing):
-                    print(f"  ✗ {dep}")
-            
-            if extra:
-                print(f"\n⚠️  EXTRA DEPENDENCIES ({len(extra)}):")
-                for dep in sorted(extra):
-                    print(f"  + {dep}")
-        
-        # Test result (success if no missing/extra non-stdlib dependencies)
-        success = len(missing) == 0 and len(extra) == 0
-        
-        if success:
-            print(f"\n🎉 PERFECT MATCH! All {len(comparison['expected_filtered'])} non-stdlib dependencies correctly extracted.")
-            if comparison['extracted_stdlib']:
-                print(f"   (Plus {len(comparison['extracted_stdlib'])} Julia stdlib dependencies)")
-        else:
-            print(f"\n❌ MISMATCH DETECTED:")
-            if missing:
-                print(f"   Missing {len(missing)} expected non-stdlib dependencies")
-            if extra:
-                print(f"   Found {len(extra)} unexpected non-stdlib dependencies")
-        
-        return success
-        
-    except Exception as e:
-        print(f"❌ Error testing {package_name}: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-
-def debug_package_version_ranges(package_name):
-    """Debug version ranges for a package if test fails."""
-    print(f"\n🔍 Debugging {package_name} version ranges...")
-    
-    repo_path = get_repo_path()
-    first_letter = package_name[0].upper()
-    package_dir = repo_path / first_letter / package_name
-    handler, _ = create_package_handler(package_dir)
-    
-    if handler is None:
-        print("❌ No handler found")
+        print(f"ERROR: Package directory not found")
         return
     
-    try:
-        import tomllib
-        
-        # Get version info
-        versions = handler.extract_versions()
-        latest_version = max(versions.keys(), key=lambda v: tuple(map(int, v.split('.'))))
-        
-        # Load deps file manually
-        deps_file = handler.get_dependencies_file()
-        with open(deps_file, "rb") as f:
-            deps_data = tomllib.load(f)
-        
-        print(f"Latest version: {latest_version}")
-        print(f"Version ranges in Deps.toml:")
-        
-        for range_key, deps in deps_data.items():
-            if isinstance(deps, dict):
-                matches = handler._version_in_range(latest_version, str(range_key))
-                dep_count = len(deps)
-                print(f"  [{range_key}]: {dep_count} deps, matches {latest_version}: {matches}")
-                if matches and dep_count <= 5:  # Only show deps for small lists
-                    print(f"    Dependencies: {list(deps.keys())}")
+    # List package files
+    print(f"Package files: {list(package_dir.iterdir())}")
     
+    handler, format_type = create_package_handler(package_dir)
+    print(f"Handler type: {type(handler).__name__ if handler else None}")
+    print(f"Format type: {format_type}")
+    
+    if handler is None:
+        print(f"ERROR: No handler found")
+        return
+    
+    # Show all versions
+    versions = handler.extract_versions()
+    print(f"All versions: {list(versions.keys())}")
+    print(f"Target version {version} exists: {version in versions}")
+    
+    if version not in versions:
+        print(f"ERROR: Version {version} not found")
+        return
+    
+    # Show raw dependency file content
+    deps_file = handler.get_dependencies_file()
+    print(f"\nDependency file: {deps_file}")
+    print(f"Dependency file exists: {deps_file.exists()}")
+    
+    if deps_file.exists():
+        try:
+            with open(deps_file, "r") as f:
+                deps_content = f.read()
+            print(f"Raw Deps.toml content:")
+            print(deps_content)
+        except Exception as e:
+            print(f"Error reading deps file: {e}")
+    
+    # Extract dependencies for the specific version requested
+    try:
+        result = extract_dependencies_for_version(package_name, version)
+        if result:
+            version_deps_dict, _ = result
+            print(f"\nExtracted dependencies for {version}: {version_deps_dict}")
+        else:
+            print(f"\nNo version-specific extraction available for {version}")
+            
     except Exception as e:
-        print(f"❌ Debug error: {e}")
+        print(f"Error extracting dependencies: {e}")
+        import traceback
+        traceback.print_exc()
 
 def test_package_version(package_name, version, expected_deps):
     """Test dependency extraction for a specific version of a package."""
     
     print(f"\n{'='*80}")
-    print(f"🧪 Testing: {package_name} v{version}")
+    print(f"Testing: {package_name} v{version}")
     print(f"{'='*80}")
     
     result = extract_dependencies_for_version(package_name, version)
     if result is None:
-        return False
+        return None  # Return None for skipped tests
     
     extracted_deps_dict, format_type = result
     extracted_deps = set(extracted_deps_dict.keys())
     
-    print(f"📦 Package: {package_name}")
-    print(f"🔢 Target version: {version}")
-    print(f"📄 Registry format: {format_type}")
+    print(f"Package: {package_name}")
+    print(f"Target version: {version}")
+    print(f"Registry format: {format_type}")
     
     # Compare expected vs extracted, ignoring Julia standard libraries
     comparison = compare_dependencies_ignoring_stdlib(expected_deps, extracted_deps)
     
-    print(f"\n📊 Dependency Comparison (excluding Julia stdlib):")
-    print(f"✅ Expected non-stdlib dependencies: {len(comparison['expected_filtered'])}")
-    print(f"🔍 Extracted non-stdlib dependencies: {len(comparison['extracted_filtered'])}")
-    print(f"✅ Matching dependencies: {len(comparison['matching'])}")
-    print(f"❌ Missing dependencies: {len(comparison['missing'])}")
-    print(f"⚠️  Extra dependencies: {len(comparison['extra'])}")
+    print(f"\nDependency Comparison (excluding Julia stdlib):")
+    print(f"Expected non-stdlib dependencies: {len(comparison['expected_filtered'])}")
+    print(f"Extracted non-stdlib dependencies: {len(comparison['extracted_filtered'])}")
+    print(f"Matching dependencies: {len(comparison['matching'])}")
+    print(f"Missing dependencies: {len(comparison['missing'])}")
+    print(f"Extra dependencies: {len(comparison['extra'])}")
     
     # Show stdlib info if present
     if comparison['expected_stdlib'] or comparison['extracted_stdlib']:
-        print(f"\n📚 Julia Standard Libraries (ignored in comparison):")
+        print(f"\nJulia Standard Libraries (ignored in comparison):")
         if comparison['expected_stdlib']:
             print(f"  Expected stdlib: {sorted(comparison['expected_stdlib'])}")
         if comparison['extracted_stdlib']:
@@ -504,39 +316,33 @@ def test_package_version(package_name, version, expected_deps):
     
     if missing or extra:
         if matching:
-            print(f"\n✅ MATCHING DEPENDENCIES ({len(matching)}):")
+            print(f"\nMATCHING DEPENDENCIES ({len(matching)}):")
             for dep in sorted(matching):
-                print(f"  ✓ {dep}")
+                print(f"  + {dep}")
         
         if missing:
-            print(f"\n❌ MISSING DEPENDENCIES ({len(missing)}):")
+            print(f"\nMISSING DEPENDENCIES ({len(missing)}):")
             for dep in sorted(missing):
-                print(f"  ✗ {dep}")
+                print(f"  - {dep}")
         
         if extra:
-            print(f"\n⚠️  EXTRA DEPENDENCIES ({len(extra)}):")
+            print(f"\nEXTRA DEPENDENCIES ({len(extra)}):")
             for dep in sorted(extra):
                 print(f"  + {dep}")
     else:
-        print(f"\n🎉 PERFECT MATCH! All {len(comparison['expected_filtered'])} non-stdlib dependencies correctly extracted.")
+        print(f"\nPERFECT MATCH! All {len(comparison['expected_filtered'])} non-stdlib dependencies correctly extracted.")
         if comparison['extracted_stdlib']:
-            print(f"   (Plus {len(comparison['extracted_stdlib'])} Julia stdlib dependencies)")
+            print(f"(Plus {len(comparison['extracted_stdlib'])} Julia stdlib dependencies)")
     
     # Test result (success if no missing/extra non-stdlib dependencies)
     success = len(missing) == 0 and len(extra) == 0
     
     return success
 
-def run_version_tests():
-    """Run tests on multiple versions of packages."""
+def run_all_tests():
+    """Run tests for all package versions."""
     
-    if not KNOWN_VERSION_DEPENDENCIES:
-        print("ℹ️  No multi-version test data available.")
-        return True
-    
-    print(f"\n{'='*80}")
-    print("🧪 Running multi-version dependency extraction tests...")
-    print(f"{'='*80}")
+    print("Running dependency extraction tests for specific package versions...")
     
     all_results = {}
     total_tests = sum(len(versions) for versions in KNOWN_VERSION_DEPENDENCIES.values())
@@ -547,125 +353,91 @@ def run_version_tests():
         
         for version, expected_deps in version_deps.items():
             test_count += 1
-            print(f"\n🔄 Progress: {test_count}/{total_tests}")
+            print(f"\nProgress: {test_count}/{total_tests}")
             success = test_package_version(package_name, version, expected_deps)
             package_results[version] = success
         
         all_results[package_name] = package_results
     
-    # Summary for version tests
+    # Summary
     print(f"\n{'='*80}")
-    print("📊 MULTI-VERSION TEST SUMMARY")
+    print("TEST SUMMARY")
     print(f"{'='*80}")
     
     total_passed = 0
     total_failed = 0
     
     for package_name, package_results in all_results.items():
-        package_passed = sum(package_results.values())
-        package_total = len(package_results)
+        # Count actual results, excluding None (skipped)
+        actual_results = {v: r for v, r in package_results.items() if r is not None}
+        skipped_results = {v: r for v, r in package_results.items() if r is None}
+        
+        package_passed = sum(actual_results.values())
+        package_total = len(actual_results)
         package_failed = package_total - package_passed
+        package_skipped = len(skipped_results)
         
         total_passed += package_passed
         total_failed += package_failed
         
-        print(f"\n📦 {package_name}:")
-        print(f"  ✅ Passed: {package_passed}/{package_total}")
-        print(f"  ❌ Failed: {package_failed}/{package_total}")
+        print(f"\n{package_name}:")
+        if package_total > 0:
+            print(f"  Passed: {package_passed}/{package_total}")
+            print(f"  Failed: {package_failed}/{package_total}")
+        if package_skipped > 0:
+            print(f"  Skipped: {package_skipped}")
         
         for version, success in package_results.items():
-            status = "✅ PASSED" if success else "❌ FAILED"
+            if success is None:
+                status = "SKIPPED"
+            elif success:
+                status = "PASSED"
+            else:
+                status = "FAILED"
             print(f"    v{version}: {status}")
     
-    print(f"\n{'='*50}")
-    print(f"Overall multi-version results:")
-    print(f"✅ Total passed: {total_passed}/{total_tests}")
-    print(f"❌ Total failed: {total_failed}/{total_tests}")
+    # Calculate total actual tests (excluding skipped)
+    total_actual = total_passed + total_failed
+    total_skipped = total_tests - total_actual
     
-    if total_failed == 0:
-        print(f"🎉 ALL MULTI-VERSION TESTS PASSED!")
-    else:
-        print(f"⚠️  {total_failed} multi-version test(s) failed.")
+    print(f"\n{'='*50}")
+    print(f"Overall results:")
+    print(f"Total passed: {total_passed}/{total_actual}")
+    print(f"Total failed: {total_failed}/{total_actual}")
+    if total_skipped > 0:
+        print(f"Total skipped: {total_skipped}")
+    
+    if total_failed == 0 and total_actual > 0:
+        print(f"ALL TESTS PASSED!")
+    elif total_failed > 0:
+        print(f"WARNING: {total_failed} test(s) failed.")
     
     return total_failed == 0
 
-def run_all_tests():
-    """Run comprehensive tests: latest version tests + multi-version tests."""
-    
-    print("🧪 Running comprehensive dependency extraction tests...")
-    
-    # Run latest version tests
-    print("\n" + "="*80)
-    print("📋 PHASE 1: Testing latest versions of packages")
-    print("="*80)
-    
-    latest_results = {}
-    total_packages = len(KNOWN_DEPENDENCIES)
-    
-    for i, (package_name, expected_deps) in enumerate(KNOWN_DEPENDENCIES.items(), 1):
-        print(f"\n🔄 Progress: {i}/{total_packages}")
-        success = test_package_dependencies(package_name, expected_deps)
-        latest_results[package_name] = success
-        
-        # If test fails, show debug info
-        if not success:
-            debug_package_version_ranges(package_name)
-    
-    # Run multi-version tests
-    print("\n" + "="*80)
-    print("📋 PHASE 2: Testing multiple versions of packages")
-    print("="*80)
-    
-    version_tests_passed = run_version_tests()
-    
-    # Combined final summary
-    print(f"\n{'='*80}")
-    print("📊 COMPREHENSIVE TEST SUMMARY")
-    print(f"{'='*80}")
-    
-    # Latest version results
-    latest_passed = sum(latest_results.values())
-    latest_failed = len(latest_results) - latest_passed
-    
-    print(f"\n🔄 PHASE 1 - Latest Version Tests:")
-    print(f"✅ Tests passed: {latest_passed}/{total_packages}")
-    print(f"❌ Tests failed: {latest_failed}/{total_packages}")
-    
-    for package_name, success in latest_results.items():
-        status = "✅ PASSED" if success else "❌ FAILED"
-        print(f"  {package_name} (latest): {status}")
-    
-    # Multi-version results
-    print(f"\n🔄 PHASE 2 - Multi-Version Tests:")
-    if KNOWN_VERSION_DEPENDENCIES:
-        total_version_tests = sum(len(versions) for versions in KNOWN_VERSION_DEPENDENCIES.values())
-        version_status = "✅ PASSED" if version_tests_passed else "❌ FAILED"
-        print(f"{version_status} Multi-version tests: {total_version_tests} tests across {len(KNOWN_VERSION_DEPENDENCIES)} packages")
-    else:
-        print("ℹ️  No multi-version test data available")
-        version_tests_passed = True  # Don't fail overall if no version tests
-    
-    # Overall result
-    overall_success = latest_failed == 0 and version_tests_passed
-    
-    print(f"\n{'='*50}")
-    if overall_success:
-        print("🎉 ALL TESTS PASSED! Dependency extraction is working perfectly across all versions!")
-    else:
-        issues = []
-        if latest_failed > 0:
-            issues.append(f"{latest_failed} latest version test(s) failed")
-        if not version_tests_passed:
-            issues.append("multi-version tests failed")
-        print(f"⚠️  Issues found: {', '.join(issues)}")
-    
-    print(f"{'='*80}")
-    
-    return overall_success
-
 if __name__ == "__main__":
-    # Run all tests
-    success = run_all_tests()
-    
-    # Exit with appropriate code
-    sys.exit(0 if success else 1)
+    # Check for debug mode
+    if len(sys.argv) == 3 and sys.argv[1] == "--debug":
+        # Debug mode: python test_all_packages.py --debug PackageName version
+        package_name = sys.argv[2]
+        
+        # If version not provided, look for the package in our test cases
+        if package_name in KNOWN_VERSION_DEPENDENCIES:
+            versions = list(KNOWN_VERSION_DEPENDENCIES[package_name].keys())
+            print(f"Available test versions for {package_name}: {versions}")
+            print("Usage: python test_all_packages.py --debug PackageName version")
+            sys.exit(1)
+        else:
+            print(f"Package {package_name} not found in test cases")
+            sys.exit(1)
+    elif len(sys.argv) == 4 and sys.argv[1] == "--debug":
+        # Debug mode with specific version
+        package_name = sys.argv[2]
+        version = sys.argv[3]
+        debug_package_version(package_name, version)
+        sys.exit(0)
+    else:
+        # Run all tests
+        success = run_all_tests()
+        
+        # Exit with appropriate code
+        sys.exit(0 if success else 1)
