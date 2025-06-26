@@ -47,7 +47,7 @@ def extract_dependencies_for_month(month, commit_hash):
     start_time = time.time()
     
     # Run the extraction script
-    command = f"python extract_metadata_dependencies.py {commit_hash} --output {output_file}"
+    command = f"python3 extract_metadata_dependencies.py {commit_hash} --output {output_file}"
     output = run_command(command)
     
     if output is None:

@@ -4,6 +4,8 @@ extract_metadata_dependencies.py
 
 This script extracts package dependencies from the METADATA.jl repository at a specific commit.
 METADATA.jl used a different structure than the later General registry.
+
+Updated to extract dependencies from the latest version only (consistent with General registry approach).
 """
 
 import os
@@ -77,51 +79,79 @@ class MetadataPackage:
         return metadata
     
     def extract_dependencies(self):
-        """Extract dependencies for this package across all versions."""
+        """Extract dependencies for this package from the latest version only."""
         versions_dir = self.package_dir / "versions"
         if not versions_dir.exists() or not versions_dir.is_dir():
             return {}
         
-        all_deps = {}
+        # Get all versions and find the latest one
+        versions = self.extract_versions()
+        if not versions:
+            return {}
         
-        # Process each version directory
-        for version_dir in versions_dir.iterdir():
-            if not version_dir.is_dir():
-                continue
+        # Find the latest version using proper version comparison
+        def version_tuple(v):
+            # Clean version string to handle non-standard formats
+            # Remove common suffixes like "+0", "+1", "-alpha", etc.
+            clean_v = v.split('+')[0].split('-')[0]
             
-            requires_file = version_dir / "requires"
-            if not requires_file.exists():
-                continue
-            
-            try:
-                with open(requires_file, "r") as f:
-                    requires_content = f.readlines()
+            # Handle pure alpha versions by returning a very low version
+            if clean_v.isalpha() or not any(c.isdigit() for c in clean_v):
+                return (0, 0, 0)
                 
-                # Parse the requires file (simple format, one dependency per line)
-                for line in requires_content:
-                    line = line.strip()
-                    if not line or line.startswith("#"):
-                        continue
-                    
-                    # Extract package name (ignoring version constraints)
-                    parts = line.split()
-                    if not parts:
-                        continue
-                    
-                    dep_name = parts[0]
-                    if dep_name == "julia":  # Skip julia version requirement
-                        continue
-                    
-                    # Create a mock UUID (same pattern as in extract_metadata)
-                    dep_uuid = f"metadata-{dep_name.lower()}"
-                    
-                    # Store the dependency
-                    all_deps[dep_uuid] = dep_name
+            # Split by dots and convert to integers, handling any remaining non-digits
+            parts = []
+            for part in clean_v.split('.'):
+                # Extract only the numeric part from each component
+                numeric_part = ''.join(c for c in part if c.isdigit())
+                parts.append(int(numeric_part) if numeric_part else 0)
             
-            except Exception as e:
-                print(f"Error reading dependencies from {requires_file}: {e}")
+            # Ensure we have at least 3 parts for consistent comparison
+            while len(parts) < 3:
+                parts.append(0)
+                
+            return tuple(parts)
         
-        return all_deps
+        latest_version = max(versions.keys(), key=version_tuple)
+        
+        # Extract dependencies from the latest version only
+        latest_version_dir = versions_dir / latest_version
+        requires_file = latest_version_dir / "requires"
+        
+        if not requires_file.exists():
+            return {}
+        
+        deps = {}
+        
+        try:
+            with open(requires_file, "r") as f:
+                requires_content = f.readlines()
+            
+            # Parse the requires file (simple format, one dependency per line)
+            for line in requires_content:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                
+                # Extract package name (ignoring version constraints)
+                parts = line.split()
+                if not parts:
+                    continue
+                
+                dep_name = parts[0]
+                if dep_name == "julia":  # Skip julia version requirement
+                    continue
+                
+                # Create a mock UUID (same pattern as in extract_metadata)
+                dep_uuid = f"metadata-{dep_name.lower()}"
+                
+                # Store the dependency
+                deps[dep_uuid] = dep_name
+        
+        except Exception as e:
+            print(f"Error reading dependencies from {requires_file}: {e}")
+        
+        return deps
     
     def extract_versions(self):
         """Extract version information for this package."""
