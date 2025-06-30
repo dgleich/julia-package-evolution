@@ -178,22 +178,12 @@ def extract_dependencies_for_version(package_name, target_version):
         with open(deps_file, "rb") as f:
             deps_data = tomllib.load(f)
         
-        # Apply dependency extraction logic for target version
+        # Extract dependencies using version range matching
         current_deps = {}
         
-        # Check for major version base dependencies
-        major_version = target_version.split('.')[0]
-        if major_version in deps_data and isinstance(deps_data[major_version], dict):
-            current_deps.update(deps_data[major_version])
-        
-        # Also check for "1" which sometimes means general dependencies  
-        if "1" in deps_data and isinstance(deps_data["1"], dict):
-            current_deps.update(deps_data["1"])
-        
-        # Find which version-specific ranges apply to the target version
+        # Check all version ranges to see which apply to the target version
         for version_range, deps in deps_data.items():
-            # Skip base major version entries and non-dict entries
-            if version_range in [major_version, "1"] or not isinstance(deps, dict):
+            if not isinstance(deps, dict):
                 continue
                 
             if handler._version_in_range(target_version, version_range):

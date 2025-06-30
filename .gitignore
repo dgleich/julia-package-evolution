@@ -68,3 +68,10 @@ Thumbs.db
 *.swp
 *.swo
 **/.claude/settings.local.json
+
+# Claude Code generated files
+CLAUDE.md
+claude-resume-notes.md
+
+# Julia package management
+Manifest.toml
