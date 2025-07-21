@@ -7,9 +7,6 @@ include("temporal_ecosystem_viz.jl");
 results = analyze_glmakie()
 mats = results["temporal_graphs"]
 
-## Look at the graph with the default coordinates
-# we can use the default coordinates to visualize the graph
-g = 
 ##
 # Now let's form the union graph and visualize iterations
 function form_union(results)
@@ -64,7 +61,7 @@ function _extract_graph(results, graph_matrix)
   newej = map(ej) do j
     nodemap[j]
   end
-  g = Graph(Edge.(newei,newej))
+  g = DiGraph(Edge.(newei,newej))
   nfull = length(results["graph_to_orig"])
   while nv(g) < nfull
     add_vertex!(g)
@@ -93,5 +90,13 @@ function show_temporal_graphs(results)
   end
 end
 show_temporal_graphs(results)
+
+##
+results_plots = analyze_plots()
+show_temporal_graphs(results_plots)
+
+##
+ugplots, ugplotslabls = subgraph(form_union(results_plots), results_plots)
+pplots = playground(ugplots, labels=ugplotslabls)
 
 ##
