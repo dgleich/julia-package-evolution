@@ -62,7 +62,7 @@ function create_adjacency_list(A)
 end
 
 # Create a visualization of the dependency tree
-function visualize_dependency_tree(package_name, depth=2)
+function visualize_dependency_tree(package_name, depth=2; ego_net=false, exclude_packages=String[])
     # Load package index
     index_file = "combined_package_index.json"
     if !isfile(index_file)
@@ -92,6 +92,17 @@ function visualize_dependency_tree(package_name, depth=2)
     
     package_idx = package_to_index[package_name]
     println("$package_name index: $(package_idx)")
+    
+    # Get indices of packages to exclude
+    exclude_indices = Set{Int}()
+    for pkg in exclude_packages
+        if haskey(package_to_index, pkg)
+            push!(exclude_indices, package_to_index[pkg])
+            println("Excluding package: $pkg (index: $(package_to_index[pkg]))")
+        else
+            println("Warning: Package $pkg not found in index, skipping exclusion")
+        end
+    end
     
     # Get the latest matrix file
     matrix_dir = "matrices_fixed"
@@ -163,6 +174,14 @@ function visualize_dependency_tree(package_name, depth=2)
         end
     end
     
+    # Filter out excluded packages
+    if !isempty(exclude_indices)
+        original_count = length(nodes_to_include)
+        nodes_to_include = filter(idx -> !(idx in exclude_indices), nodes_to_include)
+        excluded_count = original_count - length(nodes_to_include)
+        println("Excluded $excluded_count packages from visualization")
+    end
+    
     println("Including $(length(nodes_to_include)) nodes in the visualization")
     
     # Create a mapping from original indices to graph indices
@@ -181,6 +200,10 @@ function visualize_dependency_tree(package_name, depth=2)
         if node <= length(adj_list)
             for dep in adj_list[node]
                 if dep in nodes_to_include
+                    # If ego_net is true, skip edges from the center package
+                    if ego_net && node == package_idx
+                        continue
+                    end
                     add_edge!(g, orig_to_graph[node], orig_to_graph[dep])
                 end
             end
@@ -204,7 +227,8 @@ function visualize_dependency_tree(package_name, depth=2)
     end
     
     # Launch GraphPlayground for interactive exploration
-    println("Launching GraphPlayground with $(nv(g)) nodes and $(ne(g)) edges")
+    viz_type = ego_net ? "ego network" : "dependency tree"
+    println("Launching GraphPlayground with $(nv(g)) nodes and $(ne(g)) edges ($viz_type)")
     playground(g; 
         link_options=(;distance=25, iterations=1),
         charge_options=(;strength=-100),
@@ -368,4 +392,10 @@ function get_package_deps(package_name)
     g, labels, node_depths = visualize_dependency_tree(package_name, 2)
     sorted_deps, index_to_package = analyze_dependency_contributions(package_name)
     return g, labels, node_depths, sorted_deps, index_to_package
+end
+
+# Function to visualize ego network around a package
+function visualize_ego_network(package_name, depth=2; exclude_packages=String[])
+    println("Visualizing ego network for $package_name (depth=$depth)...")
+    return visualize_dependency_tree(package_name, depth; ego_net=true, exclude_packages=exclude_packages)
 end
