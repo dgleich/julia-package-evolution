@@ -93,6 +93,10 @@ function load_dependencies_info(matrix_dir=joinpath(@__DIR__, "matrices_fixed"))
   return info
 end 
 
+deps = load_dependencies_info()
+
+##
+
 """ Return the set of all recursive dependencies for a given package index 
     This will return all packages that depend on the given package, directly or indirectly.
 """

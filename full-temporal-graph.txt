@@ -1,0 +1,100 @@
+This is a directory with a study of the julia package dependnecies over time.
+These are stored in two different repos. 
+The changeover between the two repos occurs on 
+- ## Registry Transition Details
+- **Transition Date**: February 25, 2018 (commit `fdea9f164d45b616ce775e5506c0bbef70f3bb29`)
+Both repos have been cloned in this particular directory, although that may 
+not be the case for people who try to use the code.
+
+The goal is now to produce a commit-by-commit analysis. the starting point
+is to get a graph for each commit and allow us to see the changes 
+between commits as well as the edits to each edges. 
+
+This should be done in the following module, which we'll need you to create
+code for. A skeleton is below. 
+
+
+
+""" 
+This is a module to work with Julia package dependencies over time. 
+It is setup to handle details of how dependencies have been encoded in the
+original METADATA.jl repo as well as the move to the new General repo around 2018. 
+
+Repo links:
+- https://github.com/JuliaLang/METADATA.jl
+- https://github.com/JuliaRegistries/General
+
+Key features:
+
+		import JuliaPackageDependencies 
+		const JPD = JuliaPackageDependencies
+		
+		D = JPD.dependencies(date) # returns 
+		D, d = JPD.next_commit!(D) # returns the new dependencies D and the delta structure, d
+		
+		
+		
+"""
+module JuliaPackageDependencies
+
+include("types.jl")
+
+# setup the following code in types. 
+struct Dependencies
+  g::SimpleDigraph
+  c::String # commit hash
+end 
+# write simple display commands 
+
+struct DependenciesDelta
+  # TODO
+  new_packages::Vector{Int}
+  new_edges::Vector{Tuple{Int,Int}}
+  removed_edges::Vector{Tuple{Int,Int}} 
+  dt::DateTime 
+end  
+# write simple display commands 
+
+enum Repositories 
+  METADATA
+  GENERAL
+end 
+
+struct RepositoryState
+  commit::String # commit hash
+  dt::DateTime # time 
+  active_repo::Repositories # 
+end 
+# write simple display commands 
+
+
+
+const _git_base_dir::String = getenv("JULIA_PACKAGE_DEPENDENCIES_CLONEDIR", "") === "" ? getcwd() : getenv("JULIA_PACKAGE_DEPENDENCIES_CLONEDIR", "")
+
+""" 
+Verify that we have all the two repositories cloned in _git_base_dir and throw an error with the
+cloning instructions if not, also, reset to a known commit. Initialize the locks if we are using them. 
+Throw an error if we can't aquire the lock and setup code to release it when the module is unloaded. 
+"""
+function _verify_state()
+end 
+
+
+# move to the next commit, and check for changeover 
+# this should, update to the next commit, switch over to the GENERAL repo if necessary
+# read only the changed files
+# look at the vertices that changed
+# figure out what links are added and what links are removed.
+# note that we'll need to parse only the dependencies for the latest version.
+# this is a bit tricky to do with the way deps are stored. 
+# but it can be done. Then 
+function _next_commit!(r::RepositoryState)
+end 
+
+# we also need to use combined package index to get indices for each package. 
+# these will be used throughout. Throw an error if you can't find an index for a package.
+# this should be loaded at module init. 
+
+## Time-stamped edits
+time i j + # added an edge at time 
+time i j - # removed an edge at this time 
