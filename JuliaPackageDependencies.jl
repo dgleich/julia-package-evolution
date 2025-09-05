@@ -229,6 +229,8 @@ function _checkout_commit(repo_path::String, commit_hash::String)
     try
         cmd = `git checkout --force $commit_hash`
         run(pipeline(cmd, stdout=devnull, stderr=devnull))
+        # Small sleep to reduce system load
+        sleep(0.05)
     finally
         cd(old_pwd)
     end

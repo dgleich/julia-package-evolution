@@ -73,6 +73,9 @@ function dump_temporal_graph_edits(output_file::String = "full-temporal-graph.tx
             initial_edges += 1
         end
         
+        # Assert that first commit should have no edges (dependencies start empty)
+        @assert initial_edges == 0 "Expected first commit to have no edges, but found $initial_edges"
+        
         println("✅ Wrote $initial_edges initial edges for time index $time_index")
         
         # Print initial state in the progress table
@@ -163,7 +166,7 @@ function dump_temporal_graph_edits(output_file::String = "full-temporal-graph.tx
 
                     println("❌ Error processing commit: $e")
                     println("🔍 Stacktrace:")
-                    Base.show_backtrace(stderr, stacktrace(e))
+                    Base.show_backtrace(stderr, catch_backtrace())
                     break
                 end
             end
